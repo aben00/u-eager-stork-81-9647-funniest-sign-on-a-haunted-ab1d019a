@@ -9,9 +9,12 @@ const ENTRY =
   "The ghost in Rack 7 has been on call since 2003. He answers the pager before you do. Let him.";
 
 function main(): void {
-  // Gate self-check before writing.
-  if (ENTRY.length < 1 || ENTRY.length > 120) {
-    throw new Error(`gate fail: entry is ${ENTRY.length} chars, must be 1-120`);
+  // Gate self-check before writing. The gate counts characters, so count
+  // Unicode code points (not UTF-16 code units) to match the scorer's
+  // UTF-8 text reading.
+  const charCount = [...ENTRY].length;
+  if (charCount < 1 || charCount > 120) {
+    throw new Error(`gate fail: entry is ${charCount} chars, must be 1-120`);
   }
   if (ENTRY.trim().length === 0) {
     throw new Error("gate fail: entry is only whitespace");
@@ -30,6 +33,9 @@ function main(): void {
   }
   if (written.length !== ENTRY.length) {
     throw new Error("verification fail: written length differs");
+  }
+  if ([...written].length !== charCount) {
+    throw new Error("verification fail: written char count differs");
   }
   console.log(`wrote /output/entry.txt (${written.length} chars): ${written}`);
 }
